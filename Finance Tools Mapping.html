@@ -251,7 +251,7 @@ button.tag:hover{outline:1px solid var(--accent)}
       <div class="axl">Business Functions</div>
     </section>
     <section class="panel" aria-label="Most used tools">
-      <div class="phead"><div><h2><span class="n">8</span><span id="topTitle">Most used tools</span></h2><p class="hint">This graphic shows how many legal entities are applying these tools to its business functions.<br>You can use other boards to filter the business functions and see what tool is more commonly applied to them.<br>For example: if you use board 6 to filter the business function Tax, you will see that SAP ERP is the most commonly applied tool for Tax management, being used by 16 legal entities.</p></div></div>
+      <div class="phead"><div><h2><span class="n">8</span><span id="topTitle">Most used tools</span></h2><p class="hint" id="topHint"></p></div></div>
       <div class="bars" id="top"></div>
     </section>
   </div>
@@ -436,19 +436,20 @@ $("cov").addEventListener("click",e=>{const b=e.target.closest("[data-p]");if(b)
 function heat(el,cols,colKey,colLabel,colTitle,onCols,selCol){
   const g=group(rowsF("proc"),r=>r[1]+"|"+colKey(r));
   const vals=[...g.values()].map(valAs),max=Math.max(1,...vals);
-  let h=`<div></div>`+cols.map(c=>`<button type="button" class="ch${onCols(c)?" on":""}" data-col="${esc(c)}" title="${esc(colTitle(c))}">${esc(colLabel(c))}</button>`).join("");
+  let h=`<div></div>`+cols.map(c=>`<button type="button" class="ch${onCols(c)?" on":""}" data-col="${esc(c)}" title="${esc(colTitle(c))}">${colLabel(c)}</button>`).join("");
   D.P.forEach((p,i)=>{
     h+=`<button type="button" class="rh${S.procs.has(i)?" on":""}${focused(i)?"":" dim"}" data-p="${i}" title="${esc(p)}">${esc(p)}</button>`;
     for(const c of cols){const a=g.get(i+"|"+c),v=val(a),dim=focused(i)?"":" dim",sel=selCol&&selCol(c)?" selcol":"";
       h+=v?`<div class="hc b${binFor(v,max)}${dim}${sel}" ${tipAttr(`<b>${esc(p)}</b>${esc(colTitle(c))}<br>${fmt3(a)}`)}>${v}</div>`:`<div class="hc z${dim}${sel}">·</div>`;}
   });
-  el.style.gridTemplateColumns=`minmax(130px,200px) repeat(${cols.length},minmax(${cols.length>8?40:58}px,1fr))`;
+  el.style.gridTemplateColumns=`minmax(130px,200px) repeat(${cols.length},minmax(${cols.length>8?40:el.id==="hmSeg"?46:58}px,1fr))`;
   el.innerHTML=h;
 }
+const SHORT={"North America":"North<br>America","Latin America":"Latin<br>America","APAC w/o India":"APAC<br>w/o India"};
 function renderHeat(){
-  heat($("hmSeg"),D.S.map((_,i)=>i),r=>D.E[r[2]][2],c=>D.S[c],c=>D.S[c],c=>S.segs.has(+c),null);
+  heat($("hmSeg"),D.S.map((_,i)=>i),r=>D.E[r[2]][2],c=>SHORT[D.S[c]]||esc(D.S[c]),c=>D.S[c],c=>S.segs.has(+c),null);
   $("hmSegHint").innerHTML=`${METRIC[S.metric]} per business function and region.<br>Click a region to filter. Click it again to unfilter (see the whole data).<br>Click a business function to focus. Click it again to unfilter (see the whole data).`;
-  heat($("hmCty"),COUNTRIES,r=>entCountry(r[2]),c=>CODE[c]||c,c=>c,c=>S.sel===c,c=>S.sel===c);
+  heat($("hmCty"),COUNTRIES,r=>entCountry(r[2]),c=>esc(CODE[c]||c),c=>c,c=>S.sel===c,c=>S.sel===c);
   {const pc=D.P.indexOf("Product Costing"),a=group(rowsF("proc"),r=>r[1]+"|"+entCountry(r[2])).get(pc+"|United States"),n=a?a.tools.size:0;
   $("hmCtyHint").innerHTML=`${METRIC[S.metric]} per business function and country. Click a country code to open its detail.<br><b>How to read:</b> The United States ${n===0?"applies no tools":`applies ${n} tool${n===1?"":"s"}`} to product costing.`;}
 }
@@ -465,6 +466,8 @@ function renderTop(){
   const list=[...g.entries()].sort((a,b)=>b[1].ents.size-a[1].ents.size||TN()[a[0]].localeCompare(TN()[b[0]])).slice(0,14);
   const mx=Math.max(1,...list.map(x=>x[1].ents.size));
   const n=S.procs.size;$("topTitle").textContent=(S.scn==="tobe"?"To be: ":"As is: ")+(n===0?"Most used tools, all business functions":n===1?"Most used tools in "+D.P[[...S.procs][0]]:`Most used tools in ${n} business functions`);
+  {const sc=entScope().length,ci=list.findIndex(x=>TN()[x[0]]==="CAR-WF"),pick=ci>=0?list[ci]:list[0];
+   $("topHint").innerHTML=pick?`<b>How to read:</b> ${esc(TN()[pick[0]])} is one of the most commonly used tools, since it's being used by ${pick[1].ents.size} out of ${sc} legal entities.`:"No tools match these filters.";}
   $("top").innerHTML=list.length?list.map(([t,a])=>`<button type="button" class="br${TS().has(t)?" on":""}" data-t="${t}"><span class="t" title="${esc(TN()[t])}">${esc(TN()[t])}</span><span class="b"><i style="width:${a.ents.size/mx*100}%"></i></span><span class="v">${a.ents.size} <small>ent.</small></span></button>`).join(""):`<div class="empty">No tools match these filters.</div>`;
 }
 $("top").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(b){const t=+b.dataset.t;TS().has(t)?TS().delete(t):TS().add(t);render();}});
@@ -474,7 +477,7 @@ function renderSpan(){
   const upto=Math.max(4,hist.reduce((a,v,i)=>v?i:a,0)),vals=hist.slice(1,upto+1),mx=Math.max(1,...vals);
   $("span").innerHTML=vals.map((v,i)=>`<div class="col" ${tipAttr(`<b>${v} tools</b>used in ${i+1} business function${i?"s":""}`)}><b>${v}</b><i style="height:${v/mx*100*.78}%"></i><span>${i+1}</span></div>`).join("");
   const cnt=(c,f)=>c===0?`No tool is being applied ${f}.`:`${c} tool${c===1?" is":"s are"} being applied ${f}.`;
-  $("spanHint").innerHTML=`Tools grouped by the number of business functions they appear in (${m.size} tools in scope).<br><b>How to read:</b> ${cnt(hist[3]||0,"to 3 business functions at the same time")} ${cnt(hist[1]||0,"to only 1 business function")} ${cnt(hist[6]||0,"to exactly 6 business functions at the same time")}`;
+  $("spanHint").innerHTML=`Tools grouped by the number of business functions they appear in (${m.size} tools in scope).<br><b>How to read:</b> ${cnt(hist[3]||0,"to 3 business functions at the same time")}`;
 }
 
 /* ---------- country detail ---------- */
