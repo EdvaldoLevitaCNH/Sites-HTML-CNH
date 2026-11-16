@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Finance Systems Map</title>
+<title>Internal Studies</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap">
 <style>
@@ -89,7 +89,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-
 .pc .mini b{display:block;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
 .pc .cov{height:5px;background:var(--line);border-radius:0;overflow:hidden}
 .pc .cov i{display:block;height:100%;background:var(--s4);border-radius:0}
-.row2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+.row2{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
 .ctl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:10px}
 .seg button[disabled]{opacity:.4;cursor:not-allowed}
 .plan{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
@@ -220,38 +220,30 @@ button.tag:hover{outline:1px solid var(--accent)}
     </section>
     <section class="panel detail" id="detail" hidden aria-label="Country detail"></section>
     </div>
-    <section class="panel" aria-label="Tool consolidation plan">
-      <div class="phead"><div><h2><span class="n">2</span>Distinct tools per business function</h2><p class="hint" id="planHint"></p></div></div>
-      <div class="hmw"><table class="plan" id="plan"></table></div>
-    </section>
   </div>
 
   <section class="panel" aria-label="Summary numbers">
-    <div class="phead"><div><h2><span class="n">3</span>Summary</h2></div></div>
+    <div class="phead"><div><h2><span class="n">2</span>Summary</h2></div></div>
     <div class="kpis" id="kpis"></div>
   </section>
 
   <section class="panel" aria-label="Business Functions">
     <div class="phead">
-      <div><h2><span class="n">4</span>Business Functions</h2><p class="hint" id="focusHint"></p></div>
+      <div><h2><span class="n">3</span>Business Functions</h2><p class="hint" id="focusHint"></p></div>
       <button class="btn" id="clearFocus" type="button">Show all business functions</button>
     </div>
     <div class="cards" id="cards"></div>
   </section>
 
-  <div class="row2e">
+  <div>
     <section class="panel" aria-label="Business Function by Region">
-      <div class="phead"><div><h2><span class="n">5</span>Business Function by Region</h2><p class="hint" id="hmSegHint"></p></div></div>
+      <div class="phead"><div><h2><span class="n">4</span>Business Function by Region</h2><p class="hint" id="hmSegHint"></p></div></div>
       <div class="hmw"><div class="hm" id="hmSeg"></div></div>
-    </section>
-    <section class="panel" aria-label="Most used tools">
-      <div class="phead"><div><h2><span class="n">6</span><span id="topTitle">Most used tools</span></h2><p class="hint" id="topHint"></p></div></div>
-      <div class="bars" id="top"></div>
     </section>
   </div>
 
   <section class="panel" aria-label="Business Function by Country">
-    <div class="phead"><div><h2><span class="n">7</span>Business Function by Country</h2><p class="hint" id="hmCtyHint"></p></div></div>
+    <div class="phead"><div><h2><span class="n">5</span>Business Function by Country</h2><p class="hint" id="hmCtyHint"></p></div></div>
     <div class="hmw"><div class="hm" id="hmCty"></div></div>
   </section>
 
@@ -328,8 +320,6 @@ function renderPlan(){
   $("plan").innerHTML=h;
   $("planHint").textContent="Distinct tools used today (as is) and after consolidation (to be), from the Summary plan. Click a row to focus.";
 }
-$("plan").addEventListener("click",e=>{const r=e.target.closest("tr[data-p]");if(r)toggleProc(+r.dataset.p);});
-$("plan").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){const r=e.target.closest("tr[data-p]");if(r){e.preventDefault();toggleProc(+r.dataset.p);}}});
 function renderCards(){
   const g=group(rowsF("proc"),r=>r[1]),sc=entScope().length;
   $("cards").innerHTML=D.P.map((p,i)=>{const a=g.get(i)||{tools:new Set(),ents:new Set(),links:0};
@@ -466,7 +456,6 @@ function renderTop(){
    $("topHint").innerHTML=pick?`<b>How to read:</b> ${esc(TN()[pick[0]])} is one of the most commonly used tools, since it's being used by ${pick[1].ents.size} out of ${sc} legal entities.<br>Click on the tool to see description and filter its information throughout the dashboard. Click again to unfilter.`:"No tools match these filters.";}
   $("top").innerHTML=list.length?list.map(([t,a])=>{const on=TS().has(t),ds=D.DESCN[TN()[t]];return `<div class="brw"><button type="button" class="br${on?" on":""}" data-t="${t}" aria-expanded="${on}" aria-controls="dsc_${t}"><span class="t" title="${esc(TN()[t])}">${esc(TN()[t])}</span><span class="b"><i style="width:${a.ents.size/mx*100}%"></i></span><span class="v">${a.ents.size} <small>ent.</small></span></button>${on?`<div class="dsc" id="dsc_${t}" role="region"><b>${esc(TN()[t])}</b> &mdash; ${ds?esc(ds):`<span class="nd">No description in the masterlist.</span>`}</div>`:""}</div>`}).join(""):`<div class="empty">No tools match these filters.</div>`;
 }
-$("top").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(b){const t=+b.dataset.t;TS().has(t)?TS().delete(t):TS().add(t);render();}});
 function renderSpan(){
   const m=new Map();rowsF("proc").forEach(r=>{const k=tid(r);if(k<0)return;if(!m.has(k))m.set(k,new Set());m.get(k).add(r[1]);});
   const hist=new Array(D.P.length+1).fill(0);m.forEach(s=>hist[s.size]++);
@@ -529,7 +518,7 @@ dd.addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(b)pick(+
 document.addEventListener("click",e=>{if(!e.target.closest(".tool-box"))closeDd();});
 
 function render(){
-  syncUI();renderMap();renderPlan();renderKPIs();renderCards();renderHeat();renderTop();renderDetail();
+  syncUI();renderMap();renderKPIs();renderCards();renderHeat();renderDetail();
 }
 render();
 </script>
